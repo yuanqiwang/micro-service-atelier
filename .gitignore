@@ -104,4 +104,6 @@ dist
 .tern-port
 
 example/
+test/
+coverage/
 .DS_Store
