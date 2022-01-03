@@ -7,10 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "jest --collectCoverage=true",
+    "test": "jest --collectCoverage=false",
     "start": "nodemon index.js",
     "etl": "node ./database/etl.js"
-
   },
   "repository": {
     "type": "git",
@@ -26,7 +25,10 @@
     "axios": "^0.24.0",
     "body-parser": "^1.19.1",
     "express": "^4.17.2",
-    "jest": "^27.4.3",
     "mongoose": "^6.1.2"
+  },
+  "devDependencies": {
+    "jest": "^27.4.5",
+    "supertest": "^6.1.6"
   }
 }
