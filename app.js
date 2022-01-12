@@ -1,8 +1,8 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const { MongoClient } = require('mongodb');
-const { getProducts, getByProductId, getStyles} = require('./database/controller.js')
+// const { MongoClient } = require('mongodb');
+const { getProducts, getByProductId, getStyles, getFeature, getRelated} = require('./database/controller.js')
 
 
 const url = "mongodb://localhost:27017";
@@ -30,11 +30,15 @@ app.get('/products', async (req, res) => {
 app.get('/products/:product_id', async (req, res) => {
   const productId = Number(req.params.product_id)
   try {
-    const product = await getByProductId(productId)
-    res.status(200).send(product)
+    const productArray = await getByProductId(productId)
+    const featureArray = await getFeature(productId)
+
+    result = productArray[0]
+    result['features'] = featureArray[0]["features"]
+    res.status(200).send(result)
   } catch (err) {
     console.error(err)
-    res.sendStatus(500)
+    res.status(500).send("This product does not exist.")
   }
 
 })
@@ -64,6 +68,21 @@ app.get('/products/:product_id', async (req, res) => {
 
 // 4. GET /products/:product_id/related
 
+app.get('/products/:product_id/related', async (req, res) => {
+
+  const productId = Number(req.params.product_id)
+
+  try {
+    const related = await getRelated(productId)
+
+    res.status(200).send(related[0]['related'])
+
+  } catch (err) {
+    console.error(err)
+    res.sendStatus(500)
+  }
+
+})
 
 // export default app
 module.exports = app;

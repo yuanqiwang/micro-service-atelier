@@ -23,6 +23,8 @@ const getProducts = async (page = 1, count = 5) => {
 
   try {
     cursor = await product.find({id: {$in: productList}}).project({_id: 0})
+    // cursor = await product.find({id: {$gte: start, $lt: end} }).project({_id: 0})
+
   } catch (e) {
     console.error(`Unable to issue find command, ${e}`)
     return []
@@ -30,39 +32,49 @@ const getProducts = async (page = 1, count = 5) => {
 
   return cursor.toArray()
 
-  // return product.find({id: {$in: productList}}).project({_id: 0}).limit(limitCnt).toArray()
-
 }
 
-const getByProductId = (productId) => {
 
-  const featureAgg = db.collection("featureAgg");
+const getByProductId = async (productId) => {
+
   const product = db.collection("product");
 
-  let queries = [
-    product.findOne({id: productId}, {projection: {_id: 0}}),
-    featureAgg.findOne({_id: productId})
-  ]
+  try {
+    cursor = await product.find({id: productId}).project({_id: 0}).limit(1) //limit 1 is not necessary but just in case
+  } catch (e) {
+    console.error(`Unable to issue find command, ${e}`)
+    return []
+  }
 
-  return Promise.all(queries)
-    .then( results => {
-      let product = results[0];
-      let feature = results[1];
-      product["default_price"] = product["default_price"].toString()
-      product["features"] = feature["features"]
-      return product
-    })
+  return cursor.toArray()
 
 }
+
+
+const getFeature = async (productId) => {
+
+  const featureAgg = db.collection("featureAgg");
+
+  try {
+    cursor = await featureAgg.find({_id: productId}).limit(1)
+  } catch (e) {
+    console.error(`Unable to issue find command, ${e}`)
+    return []
+  }
+
+  return cursor.toArray()
+
+}
+
 
 const getStyles = (productId) => {
 
   const stylesModified = db.collection("stylesModified");
 
   return stylesModified.find({productId: productId}).project({_id: 0, productId: 0}).map((doc) => {
-    doc["sale_price"] = doc["sale_price"] == "null" ? null: doc["sale_price"].toString()
-    doc["original_price"] = doc["original_price"].toString()
+
     doc["default?"] = doc["default?"] == 0 ? false: true
+    doc["sale_price"] = doc["sale_price"] = "null"? null: doc["sale_price"]
 
     for (let sku in doc.skus) {
       if (sku) {
@@ -77,8 +89,25 @@ const getStyles = (productId) => {
 
 }
 
+const getRelated = async (productId) => {
 
-module.exports.getProducts = getProducts
-module.exports.getByProductId = getByProductId
-module.exports.getStyles = getStyles
+  const relatedAgg = db.collection("relatedAgg");
+
+  try {
+    cursor = await relatedAgg.find({_id: productId}).project({_id: 0})
+  } catch (e) {
+    console.error(`Unable to issue find command, ${e}`)
+    return []
+  }
+
+  return cursor.toArray()
+
+}
+
+module.exports = {getProducts, getByProductId, getStyles, getFeature, getRelated}
+// module.exports.getProducts = getProducts
+// module.exports.getByProductId = getByProductId
+// module.exports.getStyles = getStyles
+// module.exports.getFeature = getFeature
+// module.exports.getRelated = getRelated
 
