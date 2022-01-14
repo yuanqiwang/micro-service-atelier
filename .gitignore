@@ -108,3 +108,5 @@ test/
 coverage/
 .DS_Store
 virginia.pem
+database/.config.js
+dump/

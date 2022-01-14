@@ -1,14 +1,20 @@
 const mongoose = require('mongoose');
-// const MongoClient = require("mongodb");
-
-const uri = 'mongodb://127.0.0.1/overview';
-
+const {MongoClient} = require("mongodb");
+const {user, password} = require('./.config.js')
+// const uri = 'mongodb://127.0.0.1/overview';
+const uri = `mongodb://${user}:${password}@54.175.13.113/overview?authSource=admin`
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
 
 const db = mongoose.connection;
+
+// const uri = 'mongodb://127.0.0.1';
+// const client = new MongoClient(uri)
+// client.connect();
+// const db = client.db("overview")
+
 
 const getProducts = async (page = 1, count = 5) => {
 

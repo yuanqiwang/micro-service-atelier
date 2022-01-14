@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 const { getProducts, getByProductId, getStyles, getFeature, getRelated} = require('./database/controller.js')
 
 
-const url = "mongodb://localhost:27017";
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
