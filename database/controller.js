@@ -1,8 +1,13 @@
+const dotenv = require('dotenv')
+dotenv.config()
+
 const mongoose = require('mongoose');
 const {MongoClient} = require("mongodb");
-const {user, password} = require('./.config.js')
+// const {user, password} = require('./.config.js')
 // const uri = 'mongodb://127.0.0.1/overview';
-const uri = `mongodb://${user}:${password}@54.175.13.113/overview?authSource=admin`
+
+// const uri = `mongodb://${user}:${password}@54.175.13.113/overview?authSource=admin`
+const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@54.175.13.113/overview?authSource=admin`
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true

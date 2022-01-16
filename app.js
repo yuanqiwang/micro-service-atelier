@@ -83,5 +83,14 @@ app.get('/products/:product_id/related', async (req, res) => {
 
 })
 
+// 5. LOADER IO setup
+app.get('/loaderio-2613513a0f739518f82e2adcb7bfbca6', (req, res) => {
+  res.send('loaderio-2613513a0f739518f82e2adcb7bfbca6')
+})
+
+app.get('/loaderio-b009c8df6e04527549b850f8d6c24fa1', (req, res) => {
+  res.send('loaderio-b009c8df6e04527549b850f8d6c24fa1')
+})
+
 // export default app
 module.exports = app;

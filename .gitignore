@@ -110,3 +110,4 @@ coverage/
 virginia.pem
 database/.config.js
 dump/
+.env
