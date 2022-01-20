@@ -3,10 +3,7 @@ dotenv.config()
 
 const mongoose = require('mongoose');
 const {MongoClient} = require("mongodb");
-// const {user, password} = require('./.config.js')
-// const uri = 'mongodb://127.0.0.1/overview';
 
-// const uri = `mongodb://${user}:${password}@54.175.13.113/overview?authSource=admin`
 const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@54.175.13.113/overview?authSource=admin`
 mongoose.connect(uri, {
   useNewUrlParser: true,
@@ -14,12 +11,6 @@ mongoose.connect(uri, {
 })
 
 const db = mongoose.connection;
-
-// const uri = 'mongodb://127.0.0.1';
-// const client = new MongoClient(uri)
-// client.connect();
-// const db = client.db("overview")
-
 
 const getProducts = async (page = 1, count = 5) => {
 
@@ -52,12 +43,12 @@ const getByProductId = async (productId) => {
 
   try {
     cursor = await product.find({id: productId}).project({_id: 0}).limit(1) //limit 1 is not necessary but just in case
+    return cursor.toArray()
   } catch (e) {
     console.error(`Unable to issue find command, ${e}`)
     return []
   }
 
-  return cursor.toArray()
 
 }
 
@@ -68,12 +59,11 @@ const getFeature = async (productId) => {
 
   try {
     cursor = await featureAgg.find({_id: productId}).limit(1)
+    return cursor.toArray()
   } catch (e) {
     console.error(`Unable to issue find command, ${e}`)
     return []
   }
-
-  return cursor.toArray()
 
 }
 
@@ -106,19 +96,12 @@ const getRelated = async (productId) => {
 
   try {
     cursor = await relatedAgg.find({_id: productId}).project({_id: 0})
+    return cursor.toArray()
   } catch (e) {
     console.error(`Unable to issue find command, ${e}`)
     return []
   }
 
-  return cursor.toArray()
-
 }
 
 module.exports = {getProducts, getByProductId, getStyles, getFeature, getRelated}
-// module.exports.getProducts = getProducts
-// module.exports.getByProductId = getByProductId
-// module.exports.getStyles = getStyles
-// module.exports.getFeature = getFeature
-// module.exports.getRelated = getRelated
-

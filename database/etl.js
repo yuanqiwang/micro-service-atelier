@@ -143,7 +143,7 @@ async function stylesSku(client) {
               'as': 'el',
               'in': {
                 'k': '$$el.id',
-                'v': '$$el'
+                'v': '$$el' //limit what I put here
               }
             }
           }

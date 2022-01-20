@@ -1,13 +1,22 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-// const { MongoClient } = require('mongodb');
 const { getProducts, getByProductId, getStyles, getFeature, getRelated} = require('./database/controller.js')
-
+const redis = require('redis')
 
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+const client = redis.createClient(6379);
+const DEFAULT_EXPIRATION = 3600;
+client.on('connect', () => {
+  console.log('[*] Redis connected.');
+});
+
+client.on('error', (err) => {
+  if (err) {console.log(err)}
+});
 
 // 1. GET /products
 app.get('/products', async (req, res) => {
@@ -26,15 +35,24 @@ app.get('/products', async (req, res) => {
 })
 
 // 2. GET /products/:product_id
-app.get('/products/:product_id', async (req, res) => {
+app.get('/products/:product_id', (req, res) => {
   const productId = Number(req.params.product_id)
-  try {
-    const productArray = await getByProductId(productId)
-    const featureArray = await getFeature(productId)
 
-    result = productArray[0]
-    result['features'] = featureArray[0]["features"]
-    res.status(200).send(result)
+  try {
+    client.get(`product:${productId}`, async (error, product) => {
+      if (error) { console.log(error)}
+      if (product) {
+        return res.status(200).send(JSON.parse(product))
+      } else {
+        const productArray = await getByProductId(productId)
+        const featureArray = await getFeature(productId)
+        result = productArray[0]
+        result['features'] = featureArray[0]["features"]
+
+        client.set(`product:${productId}`, JSON.stringify(result))
+        return res.status(200).send(result)
+      }
+    })
   } catch (err) {
     console.error(err)
     res.status(500).send("This product does not exist.")
@@ -49,13 +67,22 @@ app.get('/products/:product_id', async (req, res) => {
   const productId = Number(req.params.product_id)
 
   try {
-    const styles = await getStyles(productId)
-
-    let results = {}
-    results["product_id"] = productId.toString()
-    if (styles) {results["results"] = styles}
-
-    res.status(200).send(results)
+    client.get(`product:${productId}:styles`, async (err, result) => {
+      if (err) {console.log(err)}
+      if (result) {
+        return res.status(200).send(result)
+      }
+      else {
+        const style = await getStyles(productId)
+        let result = {}
+        result["product_id"] = productId.toString()
+        if (style) {
+          result["results"] = style
+        }
+        client.setex(`product:${productId}:styles`, DEFAULT_EXPIRATION, JSON.stringify(result))
+        res.status(200).send(result)
+      }
+    })
 
   } catch (err) {
     console.error(err)
@@ -72,10 +99,17 @@ app.get('/products/:product_id/related', async (req, res) => {
   const productId = Number(req.params.product_id)
 
   try {
-    const related = await getRelated(productId)
-
-    res.status(200).send(related[0]['related'])
-
+    client.get(`product:${productId}:related`, async (err, result) => {
+      if (err) {console.log(err)}
+      if (result) {
+        return res.status(200).send(result)
+      }
+      else {
+        const related = await getRelated(productId)
+        client.setex(`product:${productId}:related`, DEFAULT_EXPIRATION, JSON.stringify(related[0]['related']))
+        res.status(200).send(related[0]['related'])
+      }
+    })
   } catch (err) {
     console.error(err)
     res.sendStatus(500)
