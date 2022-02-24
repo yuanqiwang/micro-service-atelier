@@ -3,10 +3,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { getProducts, getByProductId, getStyles, getFeature, getRelated} = require('./database/controller.js')
 const redis = require('redis')
+const compression = require('compression')
 
 const app = express();
+app.use(compression())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 const client = redis.createClient(6379);
 const DEFAULT_EXPIRATION = 3600;
